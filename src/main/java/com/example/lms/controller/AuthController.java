@@ -7,6 +7,7 @@ import com.example.lms.exception.UsernameAlreadyExistsException;
 import com.example.lms.model.Role;
 import com.example.lms.model.User;
 import com.example.lms.security.JwtTokenProvider;
+import com.example.lms.service.EmailSenderService;
 import com.example.lms.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,9 @@ public class AuthController {
 
     @Autowired
     private JwtTokenProvider tokenProvider;
+
+    @Autowired
+    private EmailSenderService emailSenderService;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -91,5 +95,9 @@ public class AuthController {
                 .fromCurrentContextPath().path("/api/users/{username}")
                 .buildAndExpand(result.getUsername()).toUri();
 
+        // Send welcome email
+        emailSenderService.sendSimpleEmail(result.getEmail(), "Welcome to Our Service", result.getUsername());
+
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
-    }}
+    }
+}
