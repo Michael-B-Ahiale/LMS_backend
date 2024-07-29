@@ -1,0 +1,7 @@
+Hello {username},
+
+Welcome to our online learning platform.
+You have access to free courses!
+
+Best regards,
+OLMS.
