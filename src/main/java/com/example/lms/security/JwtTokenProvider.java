@@ -1,5 +1,6 @@
 package com.example.lms.security;
 
+import com.example.lms.exception.InvalidJwtTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,9 +57,8 @@ public class JwtTokenProvider {
                     .parseClaimsJws(authToken);
             return true;
         } catch (Exception ex) {
-            System.out.println("Token validation failed: " + ex.getMessage());
+            throw new InvalidJwtTokenException("Invalid JWT token: " + ex.getMessage());
         }
-        return false;
     }
 
     public String getUsernameFromJWT(String token) {

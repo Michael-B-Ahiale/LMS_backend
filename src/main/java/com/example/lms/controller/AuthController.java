@@ -1,6 +1,9 @@
 package com.example.lms.controller;
 
 import com.example.lms.dto.*;
+        import com.example.lms.exception.EmailAlreadyExistsException;
+import com.example.lms.exception.UserNotFoundException;
+import com.example.lms.exception.UsernameAlreadyExistsException;
 import com.example.lms.model.Role;
 import com.example.lms.model.User;
 import com.example.lms.security.JwtTokenProvider;
@@ -44,7 +47,7 @@ public class AuthController {
         String password = loginRequest.getPassword();
 
         User user = userService.findByUsernameOrEmail(loginField, loginField)
-                .orElseThrow(() -> new RuntimeException("User not found with this username or email"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with this username or email"));
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), password)
@@ -68,15 +71,11 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
         if (userService.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new ApiResponse(false, "Username is already taken!"));
+            throw new UsernameAlreadyExistsException("Username is already taken!");
         }
 
         if (userService.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new ApiResponse(false, "Email Address already in use!"));
+            throw new EmailAlreadyExistsException("Email Address already in use!");
         }
 
         // Creating user's account

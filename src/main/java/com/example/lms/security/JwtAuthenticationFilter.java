@@ -1,5 +1,6 @@
 package com.example.lms.security;
 
+import com.example.lms.exception.UnauthorizedAccessException;
 import com.example.lms.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
+            throw new UnauthorizedAccessException("Could not set user authentication");
         }
 
         filterChain.doFilter(request, response);
