@@ -1,9 +1,6 @@
 package com.example.lms.controller;
 
-import com.example.lms.dto.ApiResponse;
-import com.example.lms.dto.JwtAuthenticationResponse;
-import com.example.lms.dto.LoginRequest;
-import com.example.lms.dto.SignUpRequest;
+import com.example.lms.dto.*;
 import com.example.lms.model.Role;
 import com.example.lms.model.User;
 import com.example.lms.security.JwtTokenProvider;
@@ -42,17 +39,30 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        // Check if the login is via email or username
+        String loginField = loginRequest.getLogin();
+        String password = loginRequest.getPassword();
+
+        User user = userService.findByUsernameOrEmail(loginField, loginField)
+                .orElseThrow(() -> new RuntimeException("User not found with this username or email"));
+
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
+                new UsernamePasswordAuthenticationToken(user.getUsername(), password)
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+
+        AuthResponse authResponse = new AuthResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getUsername(),
+                jwt,
+                tokenProvider.getJwtExpirationInMs()
+        );
+
+        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/signup")
